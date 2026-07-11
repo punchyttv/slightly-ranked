@@ -1,0 +1,36 @@
+{
+  "brand": "SLIGHTLY RANKED",
+  "themeColor": "#9b35ff",
+  "xp": {
+    "follow": 25,
+    "chat": 5,
+    "share": 15,
+    "like": 10,
+    "rose": 50,
+    "gift": 100
+  },
+  "ranks": [
+    {"name":"Bronze I","key":"bronze1","xp":0},
+    {"name":"Bronze II","key":"bronze2","xp":100},
+    {"name":"Bronze III","key":"bronze3","xp":250},
+    {"name":"Silver I","key":"silver1","xp":450},
+    {"name":"Silver II","key":"silver2","xp":700},
+    {"name":"Silver III","key":"silver3","xp":1000},
+    {"name":"Gold I","key":"gold1","xp":1400},
+    {"name":"Gold II","key":"gold2","xp":1850},
+    {"name":"Gold III","key":"gold3","xp":2350},
+    {"name":"Platinum I","key":"plat1","xp":3000},
+    {"name":"Platinum II","key":"plat2","xp":3700},
+    {"name":"Platinum III","key":"plat3","xp":4500},
+    {"name":"Diamond I","key":"diamond1","xp":5500},
+    {"name":"Diamond II","key":"diamond2","xp":6700},
+    {"name":"Diamond III","key":"diamond3","xp":8200},
+    {"name":"Champion I","key":"champ1","xp":10000},
+    {"name":"Champion II","key":"champ2","xp":12200},
+    {"name":"Champion III","key":"champ3","xp":14800},
+    {"name":"Grand Champion I","key":"gc1","xp":18000},
+    {"name":"Grand Champion II","key":"gc2","xp":22000},
+    {"name":"Grand Champion III","key":"gc3","xp":27000},
+    {"name":"Supersonic Legend","key":"ssl","xp":35000}
+  ]
+}

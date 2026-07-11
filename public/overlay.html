@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Slightly Ranked Overlay</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="transparent">
+  <div id="overlay" class="overlay hidden">
+    <section class="rank-card">
+      <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+      <div class="title" id="title">RANK UP!</div>
+      <div class="subtitle"><span id="username">@Viewer</span> <span id="actionText">just ranked up!</span></div>
+      <div class="rank-stage">
+        <div class="wings left"></div>
+        <img id="rankImg" src="" alt="rank" class="rank-img" />
+        <div class="wings right"></div>
+      </div>
+      <div class="rank-name" id="rankName">BRONZE I</div>
+      <div class="xp-line" id="xpLine">+25 XP</div>
+      <div class="progress-wrap"><div id="progressBar" class="progress-bar"></div></div>
+      <div class="next-line" id="nextLine">Next Rank</div>
+      <div id="confetti" class="confetti"></div>
+    </section>
+  </div>
+  <section id="leaderboard" class="leaderboard hidden-small">
+    <h2>TOP 10 VIEWERS</h2>
+    <div id="leaderRows"></div>
+  </section>
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>

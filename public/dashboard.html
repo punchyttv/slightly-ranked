@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Slightly Ranked Control</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="dash">
+    <header class="hero">
+      <div>
+        <h1>SLIGHTLY <span>RANKED</span></h1>
+        <p>TikTok LIVE ranking system using your uploaded rank images.</p>
+      </div>
+      <a class="button" href="/overlay" target="_blank">Open Overlay</a>
+    </header>
+    <section class="grid">
+      <div class="panel">
+        <h2>Test Buttons</h2>
+        <input id="testUser" value="Noah" />
+        <div class="buttons">
+          <button onclick="send('follow')">Follow +25</button>
+          <button onclick="send('chat')">Chat +5</button>
+          <button onclick="send('share')">Share +15</button>
+          <button onclick="send('rose')">Rose +50</button>
+          <button onclick="send('gift')">Gift +100</button>
+          <button onclick="send('gift', 500)">Big Gift +500</button>
+        </div>
+        <p class="hint">Keep <b>/overlay</b> open while testing. For TikTok LIVE Studio, add your hosted <b>https URL + /overlay</b> as a Link Source.</p>
+      </div>
+      <div class="panel">
+        <h2>TikFinity URLs</h2>
+        <code id="baseUrl"></code>
+        <p>Follow:</p><code>/event/follow?user={username}</code>
+        <p>Chat:</p><code>/event/chat?user={username}</code>
+        <p>Share:</p><code>/event/share?user={username}</code>
+        <p>Rose/Gift:</p><code>/event/rose?user={username}</code><br/><code>/event/gift?user={username}&xp=100</code>
+      </div>
+      <div class="panel wide">
+        <h2>Live Leaderboard</h2>
+        <div id="dashLeaderboard"></div>
+      </div>
+    </section>
+  </main>
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    document.getElementById('baseUrl').textContent = location.origin;
+    async function send(type, xp){
+      const user = document.getElementById('testUser').value || 'Noah';
+      await fetch(`/event/${type}?user=${encodeURIComponent(user)}${xp ? '&xp='+xp : ''}`);
+    }
+    const socket = io();
+    socket.on('leaderboard', rows => render(rows));
+    async function load(){ const r=await fetch('/leaderboard'); render(await r.json()); }
+    function render(rows){
+      const el=document.getElementById('dashLeaderboard');
+      el.innerHTML = rows.map(r=>`<div class="lb-row"><b>#${r.place}</b><span>${r.username}</span><img src="${r.rankImg}"><span>${r.rank}</span><b>${r.xp} XP</b></div>`).join('') || '<p>No viewers yet. Click a test button.</p>';
+    }
+    load();
+  </script>
+</body>
+</html>
