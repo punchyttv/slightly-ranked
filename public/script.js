@@ -67,3 +67,17 @@ function burst(n){
   }
 }
 function sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
+.hidden {
+  display: none !important;
+}
+
+#overlay.hidden {
+  display: none !important;
+}
+
+html,
+body,
+#overlay {
+  background: transparent !important;
+  background-color: transparent !important;
+}
