@@ -483,3 +483,36 @@ code {
   overflow: visible !important;
   white-space: nowrap !important;
 }
+.viewer,
+.leader-row .viewer {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  color: #ffffff !important;
+  font-size: 16px !important;
+  font-weight: 700 !important;
+  position: relative !important;
+  z-index: 9999 !important;
+  overflow: visible !important;
+  white-space: nowrap !important;
+}
+
+.leader-row {
+  color: #ffffff !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+.place,
+.xp {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+.leaderRows,
+#leaderRows {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
