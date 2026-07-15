@@ -238,3 +238,30 @@ function escapeHtml(value) {
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#039;');
 }
+.hidden {
+  opacity: 0 !important;
+  transform: scale(0.92) !important;
+  pointer-events: none !important;
+}
+
+#overlay:not(.hidden) {
+  opacity: 1 !important;
+  transform: scale(1) !important;
+}
+
+.viewer,
+.leader-row .viewer {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  color: #ffffff !important;
+  font-size: 16px !important;
+  font-weight: 700 !important;
+  white-space: nowrap !important;
+}
+
+.leader-row {
+  visibility: visible !important;
+  opacity: 1 !important;
+  color: #ffffff !important;
+}
