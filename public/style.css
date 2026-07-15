@@ -1,252 +1,36 @@
-const socket = io();
-
-const overlay = document.getElementById('overlay');
-const usernameEl = document.getElementById('username');
-const actionText = document.getElementById('actionText');
-const rankImg = document.getElementById('rankImg');
-const rankName = document.getElementById('rankName');
-const xpLine = document.getElementById('xpLine');
-const progressBar = document.getElementById('progressBar');
-const nextLine = document.getElementById('nextLine');
-const title = document.getElementById('title');
-const confetti = document.getElementById('confetti');
-const leaderRows = document.getElementById('leaderRows');
-
-let queue = [];
-let showing = false;
-
-socket.on('connect', function () {
-  console.log('Overlay connected to server');
-});
-
-socket.on('rank-event', function (event) {
-  queue.push(event);
-  runQueue();
-});
-
-socket.on('leaderboard', function (rows) {
-  renderLeaderboard(rows);
-});
-
-socket.on('reset', function () {
-  queue = [];
-  showing = false;
-
-  overlay.classList.add('hidden');
-
-  if (leaderRows) {
-    leaderRows.innerHTML = '';
-  }
-});
-
-async function runQueue() {
-  if (showing || queue.length === 0) {
-    return;
-  }
-
-  showing = true;
-
-  const event = queue.shift();
-
-  showEvent(event);
-
-  const displayTime = event.rankedUp ? 6200 : 4200;
-
-  await sleep(displayTime);
-
-  overlay.classList.add('hidden');
-
-  await sleep(450);
-
-  showing = false;
-
-  runQueue();
+#overlay {
+  opacity: 1;
+  visibility: visible;
+  transform: scale(1);
+  transition:
+    opacity 0.35s ease,
+    transform 0.35s ease;
+  pointer-events: none;
 }
 
-function showEvent(event) {
-  const username = event.username || 'viewer';
-  const currentRank = event.rank || 'Unranked';
-  const gainedXp = Number(event.addXp || 0);
-  const totalXp = Number(event.xp || 0);
-
-  usernameEl.textContent = '@' + username;
-
-  actionText.textContent = event.rankedUp
-    ? 'just ranked up!'
-    : eventText(event.type);
-
-  title.textContent = event.rankedUp
-    ? 'RANK UP!'
-    : eventTitle(event.type);
-
-  rankName.textContent = String(currentRank).toUpperCase();
-
-  xpLine.textContent = '+' + gainedXp + ' XP';
-
-  if (event.rankImg) {
-    rankImg.src = event.rankImg;
-    rankImg.style.display = 'block';
-  } else {
-    rankImg.removeAttribute('src');
-    rankImg.style.display = 'none';
-  }
-
-  const progress = Math.max(
-    0,
-    Math.min(100, Number(event.progress || 0))
-  );
-
-  progressBar.style.width = progress + '%';
-
-  if (event.nextRank) {
-    nextLine.textContent =
-      totalXp +
-      ' XP • Next: ' +
-      event.nextRank;
-  } else {
-    nextLine.textContent =
-      totalXp +
-      ' XP • MAX RANK';
-  }
-
-  confetti.innerHTML = '';
-
-  if (
-    event.rankedUp ||
-    currentRank === 'Supersonic Legend'
-  ) {
-    const amount =
-      currentRank === 'Supersonic Legend'
-        ? 100
-        : 45;
-
-    burst(amount);
-  }
-
-  overlay.classList.remove('hidden');
-
-  rankImg.classList.remove('pop');
-
-  void rankImg.offsetWidth;
-
-  rankImg.classList.add('pop');
-}
-
-function eventTitle(type) {
-  const titles = {
-    follow: 'NEW PLAYER',
-    chat: 'XP GAINED',
-    share: 'SHARE BONUS',
-    rose: 'ROSE BONUS',
-    gift: 'GIFT BONUS',
-    like: 'LIKE BONUS'
-  };
-
-  return titles[type] || 'XP GAINED';
-}
-
-function eventText(type) {
-  const messages = {
-    follow: 'joined ranked!',
-    chat: 'earned chat XP!',
-    share: 'shared the live!',
-    rose: 'sent a rose!',
-    gift: 'sent a gift!',
-    like: 'dropped likes!'
-  };
-
-  return messages[type] || 'earned XP!';
-}
-
-function renderLeaderboard(rows) {
-  if (!leaderRows) {
-    return;
-  }
-
-  const safeRows = Array.isArray(rows) ? rows : [];
-
-  leaderRows.innerHTML = safeRows
-    .map(function (row) {
-      const place = row.place || '';
-      const username = row.username || 'viewer';
-      const xp = Number(row.xp || 0);
-      const rank = row.rank || 'Unranked';
-      const rankImgUrl = row.rankImg || '';
-
-      const imageHtml = rankImgUrl
-        ? (
-          '<img src="' +
-          escapeHtml(rankImgUrl) +
-          '" alt="' +
-          escapeHtml(rank) +
-          '">'
-        )
-        : '<span></span>';
-
-      return (
-        '<div class="leader-row">' +
-          '<span class="place">' +
-            escapeHtml(String(place)) +
-          '</span>' +
-
-          '<span class="viewer">' +
-            escapeHtml(username) +
-          '</span>' +
-
-          imageHtml +
-
-          '<span class="xp">' +
-            escapeHtml(String(xp)) +
-            ' XP' +
-          '</span>' +
-        '</div>'
-      );
-    })
-    .join('');
-}
-
-function burst(numberOfPieces) {
-  for (let i = 0; i < numberOfPieces; i++) {
-    const piece = document.createElement('i');
-
-    piece.style.left =
-      Math.random() * 100 + '%';
-
-    piece.style.animationDelay =
-      Math.random() * 0.35 + 's';
-
-    piece.style.transform =
-      'rotate(' +
-      Math.random() * 360 +
-      'deg)';
-
-    confetti.appendChild(piece);
-  }
-}
-
-function sleep(milliseconds) {
-  return new Promise(function (resolve) {
-    setTimeout(resolve, milliseconds);
-  });
-}
-
-function escapeHtml(value) {
-  return String(value)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;');
-}
-.hidden {
+#overlay.hidden {
   opacity: 0 !important;
+  visibility: hidden !important;
   transform: scale(0.92) !important;
   pointer-events: none !important;
 }
 
-#overlay:not(.hidden) {
+#leaderboard,
+#leaderRows {
+  display: block !important;
+  visibility: visible !important;
   opacity: 1 !important;
-  transform: scale(1) !important;
+}
+
+.leader-row {
+  display: grid !important;
+  grid-template-columns: 28px minmax(110px, 1fr) 38px 78px;
+  align-items: center;
+  gap: 8px;
+  padding: 5px;
+  color: #ffffff !important;
+  visibility: visible !important;
+  opacity: 1 !important;
 }
 
 .viewer,
@@ -258,10 +42,37 @@ function escapeHtml(value) {
   font-size: 16px !important;
   font-weight: 700 !important;
   white-space: nowrap !important;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.leader-row {
+.leader-row .place {
+  color: #bbbbbb !important;
   visibility: visible !important;
   opacity: 1 !important;
-  color: #ffffff !important;
+}
+
+.leader-row .xp {
+  color: #eeeeee !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  text-align: right;
+}
+
+.leader-row img {
+  display: block !important;
+  width: 35px;
+  height: 35px;
+  object-fit: contain;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+#username {
+  display: inline-block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  color: #ff4df6 !important;
+  font-size: 28px !important;
+  font-weight: 900 !important;
 }
