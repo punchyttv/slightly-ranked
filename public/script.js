@@ -1,22 +1,26 @@
-const socket = io();
+var socket = io();
 
-const overlay = document.getElementById('overlay');
-const usernameEl = document.getElementById('username');
-const actionText = document.getElementById('actionText');
-const rankImg = document.getElementById('rankImg');
-const rankName = document.getElementById('rankName');
-const xpLine = document.getElementById('xpLine');
-const progressBar = document.getElementById('progressBar');
-const nextLine = document.getElementById('nextLine');
-const title = document.getElementById('title');
-const confetti = document.getElementById('confetti');
-const leaderRows = document.getElementById('leaderRows');
+var overlay = document.getElementById('overlay');
+var usernameEl = document.getElementById('username');
+var actionText = document.getElementById('actionText');
+var rankImg = document.getElementById('rankImg');
+var rankName = document.getElementById('rankName');
+var xpLine = document.getElementById('xpLine');
+var progressBar = document.getElementById('progressBar');
+var nextLine = document.getElementById('nextLine');
+var title = document.getElementById('title');
+var confetti = document.getElementById('confetti');
+var leaderRows = document.getElementById('leaderRows');
 
-let queue = [];
-let showing = false;
+var queue = [];
+var showing = false;
 
-socket.on('rank-event', function (event) {
-  queue.push(event);
+socket.on('connect', function () {
+  console.log('Slightly Ranked overlay connected');
+});
+
+socket.on('rank-event', function (eventData) {
+  queue.push(eventData);
   runQueue();
 });
 
@@ -24,65 +28,97 @@ socket.on('leaderboard', function (rows) {
   renderLeaderboard(rows);
 });
 
-async function runQueue() {
+socket.on('reset', function () {
+  queue = [];
+  showing = false;
+
+  if (overlay) {
+    overlay.classList.add('hidden');
+  }
+
+  if (leaderRows) {
+    leaderRows.innerHTML = '';
+  }
+});
+
+function runQueue() {
   if (showing || queue.length === 0) {
     return;
   }
 
   showing = true;
 
-  const event = queue.shift();
+  var eventData = queue.shift();
 
-  showEvent(event);
+  showEvent(eventData);
 
-  await sleep(event.rankedUp ? 6200 : 4200);
+  var displayTime = eventData.rankedUp ? 6200 : 4200;
 
-  overlay.classList.add('hidden');
+  setTimeout(function () {
+    overlay.classList.add('hidden');
 
-  await sleep(450);
-
-  showing = false;
-
-  runQueue();
+    setTimeout(function () {
+      showing = false;
+      runQueue();
+    }, 450);
+  }, displayTime);
 }
 
-function showEvent(event) {
-  usernameEl.textContent = '@' + event.username;
-  rankImg.src = event.rankImg;
-  rankName.textContent = String(event.rank || '').toUpperCase();
-  xpLine.textContent = '+' + event.addXp + ' XP';
+function showEvent(eventData) {
+  var viewerName = eventData.username || 'viewer';
+  var currentRank = eventData.rank || 'Unranked';
+  var gainedXp = Number(eventData.addXp || 0);
+  var totalXp = Number(eventData.xp || 0);
+  var progress = Number(eventData.progress || 0);
 
-  const progress = Math.max(
-    0,
-    Math.min(100, event.progress || 0)
-  );
+  usernameEl.textContent = '@' + viewerName;
+
+  title.textContent = eventData.rankedUp
+    ? 'RANK UP!'
+    : eventTitle(eventData.type);
+
+  actionText.textContent = eventData.rankedUp
+    ? 'just ranked up!'
+    : eventText(eventData.type);
+
+  rankName.textContent = String(currentRank).toUpperCase();
+  xpLine.textContent = '+' + gainedXp + ' XP';
+
+  if (eventData.rankImg) {
+    rankImg.src = eventData.rankImg;
+    rankImg.style.display = 'block';
+    rankImg.style.visibility = 'visible';
+  } else {
+    rankImg.removeAttribute('src');
+    rankImg.style.display = 'none';
+  }
+
+  if (progress < 0) {
+    progress = 0;
+  }
+
+  if (progress > 100) {
+    progress = 100;
+  }
 
   progressBar.style.width = progress + '%';
 
-  if (event.nextRank) {
+  if (eventData.nextRank) {
     nextLine.textContent =
-      event.xp + ' XP • Next: ' + event.nextRank;
+      totalXp + ' XP • Next: ' + eventData.nextRank;
   } else {
     nextLine.textContent =
-      event.xp + ' XP • MAX RANK';
+      totalXp + ' XP • MAX RANK';
   }
-
-  title.textContent = event.rankedUp
-    ? 'RANK UP!'
-    : eventTitle(event.type);
-
-  actionText.textContent = event.rankedUp
-    ? 'just ranked up!'
-    : eventText(event.type);
 
   confetti.innerHTML = '';
 
   if (
-    event.rankedUp ||
-    event.rank === 'Supersonic Legend'
+    eventData.rankedUp ||
+    currentRank === 'Supersonic Legend'
   ) {
     burst(
-      event.rank === 'Supersonic Legend'
+      currentRank === 'Supersonic Legend'
         ? 100
         : 45
     );
@@ -91,14 +127,12 @@ function showEvent(event) {
   overlay.classList.remove('hidden');
 
   rankImg.classList.remove('pop');
-
   void rankImg.offsetWidth;
-
   rankImg.classList.add('pop');
 }
 
 function eventTitle(type) {
-  const titles = {
+  var titles = {
     follow: 'NEW PLAYER',
     chat: 'XP GAINED',
     share: 'SHARE BONUS',
@@ -111,7 +145,7 @@ function eventTitle(type) {
 }
 
 function eventText(type) {
-  const messages = {
+  var messages = {
     follow: 'joined ranked!',
     chat: 'earned chat XP!',
     share: 'shared the live!',
@@ -128,34 +162,62 @@ function renderLeaderboard(rows) {
     return;
   }
 
-  leaderRows.innerHTML = (rows || [])
-    .map(function (row) {
-      return (
-        '<div class="leader-row">' +
-          '<span class="place">' +
-            row.place +
-          '</span>' +
-          '<span class="viewer">' +
-            row.username +
-          '</span>' +
-          '<img src="' +
-            row.rankImg +
-            '" alt="' +
-            row.rank +
-          '">' +
-          '<span class="xp">' +
-            row.xp +
-            ' XP' +
-          '</span>' +
-        '</div>'
-      );
-    })
-    .join('');
+  if (!Array.isArray(rows)) {
+    rows = [];
+  }
+
+  var html = '';
+
+  for (var i = 0; i < rows.length; i++) {
+    var row = rows[i];
+
+    var place =
+      row.place !== undefined && row.place !== null
+        ? row.place
+        : i + 1;
+
+    var viewerName = row.username || 'viewer';
+    var xp = Number(row.xp || 0);
+    var rank = row.rank || 'Unranked';
+    var rankImage = row.rankImg || '';
+
+    html += '<div class="leader-row">';
+
+    html +=
+      '<span class="place">' +
+      escapeHtml(String(place)) +
+      '</span>';
+
+    html +=
+      '<span class="viewer">' +
+      escapeHtml(viewerName) +
+      '</span>';
+
+    if (rankImage) {
+      html +=
+        '<img src="' +
+        escapeHtml(rankImage) +
+        '" alt="' +
+        escapeHtml(rank) +
+        '">';
+    } else {
+      html += '<span class="rank-placeholder"></span>';
+    }
+
+    html +=
+      '<span class="xp">' +
+      escapeHtml(String(xp)) +
+      ' XP</span>';
+
+    html += '</div>';
+  }
+
+  leaderRows.innerHTML = html;
 }
 
 function burst(numberOfPieces) {
-  for (let i = 0; i < numberOfPieces; i++) {
-    const piece = document.createElement('i');
+  for (var i = 0; i < numberOfPieces; i++) {
+    var piece = document.createElement('i');
 
     piece.style.left =
       Math.random() * 100 + '%';
@@ -172,8 +234,11 @@ function burst(numberOfPieces) {
   }
 }
 
-function sleep(milliseconds) {
-  return new Promise(function (resolve) {
-    setTimeout(resolve, milliseconds);
-  });
+function escapeHtml(value) {
+  return String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
 }
