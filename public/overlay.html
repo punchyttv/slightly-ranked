@@ -2,29 +2,35 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
   <title>Slightly Ranked Overlay</title>
 
-  <link rel="stylesheet" href="style.css">
-
-  <script src="/socket.io/socket.io.js"></script>
+  <link rel="stylesheet" href="style.css?v=7">
 </head>
 
 <body class="transparent">
 
-  <div id="overlay" class="overlay">
+  <!-- This card stays hidden until a viewer action happens -->
+  <div id="overlay" class="overlay hidden">
 
     <section class="rank-card">
 
-      <div id="confetti" class="confetti"></div>
+      <div class="corner tl"></div>
+      <div class="corner tr"></div>
+      <div class="corner bl"></div>
+      <div class="corner br"></div>
 
       <div id="title" class="title">
-        RANK UP!
+        XP GAINED
       </div>
 
       <div class="subtitle">
         <span id="username">@Viewer</span>
-        <span id="actionText">just ranked up!</span>
+        <span id="actionText">earned XP!</span>
       </div>
 
       <div class="rank-stage">
@@ -35,7 +41,8 @@
           id="rankImg"
           class="rank-img"
           src=""
-          alt="Rank">
+          alt="Viewer rank"
+        >
 
         <div class="wings right"></div>
 
@@ -46,32 +53,34 @@
       </div>
 
       <div id="xpLine" class="xp-line">
-        +25 XP
+        +0 XP
       </div>
 
       <div class="progress-wrap">
         <div
           id="progressBar"
-          class="progress-bar">
-        </div>
+          class="progress-bar"
+        ></div>
       </div>
 
-      <div
-        id="nextLine"
-        class="next-line">
+      <div id="nextLine" class="next-line">
         Next Rank
       </div>
+
+      <div id="confetti" class="confetti"></div>
 
     </section>
 
   </div>
 
-  <section class="leaderboard hidden-small">
+  <!-- Leaderboard stays visible -->
+  <section id="leaderboard" class="leaderboard">
     <h2>TOP 10 VIEWERS</h2>
     <div id="leaderRows"></div>
   </section>
 
-  <script src="script.js?v=4"></script>
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="script.js?v=7"></script>
 
 </body>
 </html>
